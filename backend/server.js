@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
+const fs = require('fs');
 
 const authRoutes = require('./routes/auth');
 const slotsRoutes = require('./routes/slots');
@@ -29,12 +30,21 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// Serve frontend production build statically on single port 5000!
-app.use(express.static(path.join(__dirname, '../frontend/dist')));
+// Detect dist location (root dist or frontend/dist)
+const distPath = fs.existsSync(path.join(__dirname, '../dist'))
+  ? path.join(__dirname, '../dist')
+  : path.join(__dirname, '../frontend/dist');
+
+app.use(express.static(distPath));
 
 app.get('*', (req, res) => {
   if (!req.path.startsWith('/api')) {
-    res.sendFile(path.join(__dirname, '../frontend/dist/index.html'));
+    const indexPath = path.join(distPath, 'index.html');
+    if (fs.existsSync(indexPath)) {
+      res.sendFile(indexPath);
+    } else {
+      res.send('College Smart Parking System API & Frontend Engine Online');
+    }
   }
 });
 
