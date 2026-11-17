@@ -5,8 +5,13 @@ const { outbox } = require('../data/parkingData');
 let transporter = null;
 
 async function initMailer() {
+  // Skip external Ethereal account creation on Vercel (causes cold-start timeouts)
+  if (process.env.VERCEL) {
+    console.log("Vercel environment: Nodemailer running in outbox-only mode.");
+    return;
+  }
   try {
-    // Generate test SMTP service (Ethereal Mail) for instant verification
+    // Generate test SMTP service (Ethereal Mail) for local development
     let testAccount = await nodemailer.createTestAccount();
     transporter = nodemailer.createTransport({
       host: "smtp.ethereal.email",
